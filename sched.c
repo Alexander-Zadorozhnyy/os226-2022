@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 static int time = 0;
+
 task *all_tasks = NULL;
 task *curr = NULL;
 task *last_task = NULL;
@@ -91,7 +92,7 @@ void run_fifo()
 		}
 		
 		curr->entrypoint(curr->ctx);
-		struct task *delete = curr;
+		task *delete = curr;
 		curr = curr->next;
 		delete_task(delete);
 	}
@@ -102,21 +103,22 @@ task *find_max_prior()
 	if (all_tasks == NULL)
 		return NULL;
 
-	task *curr_t = all_tasks;
+	task *start_state = all_tasks;
 	task *ans = NULL;
 	int max_prior = -1;
 
 	do
 	{
-		if (curr_t->prior > max_prior && curr_t->start <= time)
+		if (all_tasks->prior > max_prior && all_tasks->start <= time)
 		{
-			max_prior = curr_t->prior;
-			ans = curr_t;
+			max_prior = all_tasks->prior;
+			ans = all_tasks;
 		}
 
-		curr_t = curr_t->next;
-	} while (curr_t != all_tasks);
+		all_tasks = all_tasks->next;
+	} while (start_state != all_tasks);
 
+	all_tasks = start_state;
 	return ans;
 }
 
@@ -134,21 +136,22 @@ task *find_min_deadline()
 	if (all_tasks == NULL)
 		return NULL;
 
-	task *curr_t = all_tasks;
+	task *start_state = all_tasks;
 	task *ans = NULL;
 	int min_deadline = INT_MAX;
 
 	do
 	{
-		if (min_deadline > curr_t->deadline && curr_t->deadline > 0 && curr_t->start <= time)
+		if (min_deadline > all_tasks->deadline && all_tasks->deadline > 0 && all_tasks->start <= time)
 		{
-			min_deadline = curr_t->deadline;
-			ans = curr_t;
+			min_deadline = all_tasks->deadline;
+			ans = all_tasks;
 		}
 
-		curr_t = curr_t->next;
-	} while (curr_t != all_tasks);
+		all_tasks = all_tasks->next;
+	} while (start_state != all_tasks);
 
+	all_tasks = start_state;
 	return ans != NULL ? ans : find_max_prior();
 }
 
